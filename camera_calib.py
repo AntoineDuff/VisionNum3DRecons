@@ -14,25 +14,31 @@ def calibrate_camera(i_grid_size, j_grid_size):
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
 
-    images = glob.glob('*.jpg')
+    images = glob.glob('./calibration/*.jpg')
 
-    for fname in images:
-        img = cv2.imread(fname)
+    for image in images:
+        img = cv2.imread(image)
         gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
         # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, (i_grid_size, j_grid_size),None)
+        ret, corners = cv2.findChessboardCorners(gray, (i_grid_size, j_grid_size), None)
 
         # If found, add object points, image points (after refining them)
         if ret == True:
             objpoints.append(objp)
 
-            corners2 = cv2.cornerSubPix(gray,corners,(11, 11),(-1, -1), criteria)
+            corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
             imgpoints.append(corners2)
 
             # Draw and display the corners
             img = cv2.drawChessboardCorners(img, (i_grid_size, j_grid_size), corners2, ret)
-            ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
-            cv2.imshow('img',img)
-            cv2.waitKey(10000)
-    cv2.destroyAllWindows()
+
+    img = cv2.imread(images[0], 0)
+    (ret,
+    camera_matrix,
+    distortion_coefficients,
+    rotation_vecs,
+    translation_vecs) = cv2.calibrateCamera(objpoints, imgpoints, img.shape[::-1], None, None)
+    
+    return ret, camera_matrix, distortion_coefficients, rotation_vecs, translation_vecs
+
