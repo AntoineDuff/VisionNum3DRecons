@@ -36,3 +36,4 @@ def calibrate_camera():
             ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
             cv2.imshow('img',img)
             cv2.waitKey(10000)
+    cv2.destroyAllWindows()
