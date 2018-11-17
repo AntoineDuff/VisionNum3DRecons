@@ -88,6 +88,15 @@ if __name__ == '__main__':
                                                      T,
                                                      scale,
                                                      (0, 0))
+
+
+    Left_Stereo_Map= cv2.initUndistortRectifyMap(MLS, dLS, RL, PL,
+                                                img_shape, cv2.CV_16SC2)
+    Right_Stereo_Map= cv2.initUndistortRectifyMap(MRS, dRS, RR, PR,
+                                                img_shape, cv2.CV_16SC2)
+
+    Left_nice= cv2.remap(frameL,Left_Stereo_Map[0],Left_Stereo_Map[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)  # Rectify the image using the kalibration parameters founds during the initialisation
+    Right_nice= cv2.remap(frameR,Right_Stereo_Map[0],Right_Stereo_Map[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
     print("ok")
 
     # (ret_B,
