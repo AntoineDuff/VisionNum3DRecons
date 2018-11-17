@@ -31,11 +31,11 @@ if __name__ == '__main__':
             rotation_vecs_B,
             translation_vecs_B) = calibrate_camera(6, 9, './calibB/*.jpg')
 
-            np.save("cameraB/cret_B", ret_A)
-            np.save("cameraB/ccamera_matrix_B",camera_matrix_A)
-            np.save("cameraB/cdistortion_coefficients_B", distortion_coefficients_A)
-            np.save("cameraB/crotation_vecs_B", rotation_vecs_A)
-            np.save("cameraB/ctranslation_vecs_B", translation_vecs_A)
+            np.save("cameraB/ret_B", ret_A)
+            np.save("cameraB/camera_matrix_B",camera_matrix_A)
+            np.save("cameraB/distortion_coefficients_B", distortion_coefficients_A)
+            np.save("cameraB/rotation_vecs_B", rotation_vecs_A)
+            np.save("cameraB/translation_vecs_B", translation_vecs_A)
             print("calibration B done!")
 
     # tt = np.load("rotation_vecs_A.npy")
