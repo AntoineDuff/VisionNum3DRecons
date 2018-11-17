@@ -42,3 +42,6 @@ def calibrate_camera(i_grid_size, j_grid_size):
     
     return ret, camera_matrix, distortion_coefficients, rotation_vecs, translation_vecs
 
+def stereo_calibration():
+        return
+
