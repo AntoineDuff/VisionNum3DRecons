@@ -39,8 +39,9 @@ def calibrate_camera(i_grid_size, j_grid_size, file_path):
     distortion_coefficients,
     rotation_vecs,
     translation_vecs) = cv2.calibrateCamera(objpoints, imgpoints, img.shape[::-1], None, None)
+
     
-    return ret, camera_matrix, distortion_coefficients, rotation_vecs, translation_vecs
+    return ret, camera_matrix, distortion_coefficients, rotation_vecs, translation_vecs, imgpoints, objpoints
 
 def stereo_calibration():
         return
