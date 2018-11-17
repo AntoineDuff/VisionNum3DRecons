@@ -65,6 +65,7 @@ if __name__ == '__main__':
     flags |= cv2.CALIB_FIX_INTRINSIC
 
     criteria_stereo= (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+
     retS, MLS, dLS, MRS, dRS, R, T, E, F = cv2.stereoCalibrate(obj_pts,
                                                           img_pts_B,
                                                           img_pts_A,
@@ -75,6 +76,18 @@ if __name__ == '__main__':
                                                           img_shape,
                                                           criteria_stereo,
                                                           flags)
+
+    scale = 0
+
+    RL, RR, PL, PR, Q, roiL, roiR= cv2.stereoRectify(MLS,
+                                                     dLS,
+                                                     MRS,
+                                                     dRS,
+                                                     img_shape,
+                                                     R,
+                                                     T,
+                                                     scale,
+                                                     (0, 0))
     print("ok")
 
     # (ret_B,
