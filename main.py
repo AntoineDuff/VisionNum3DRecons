@@ -6,18 +6,41 @@ import os.path
 if __name__ == '__main__':
     
 
-    if (os.path.isfile("camera_matrix_A.npy") == False):
+    if (os.path.isfile("cameraA/camera_matrix_A.npy") == False):
+        	
+        os.mkdir('cameraA')
         (ret_A,
         camera_matrix_A,
         distortion_coefficients_A,
         rotation_vecs_A,
         translation_vecs_A) = calibrate_camera(6, 9, './calibA/*.jpg')
 
-        np.save("camera_matrix_A",camera_matrix_A)
-        np.save("rotation_vecs_A", rotation_vecs_A)
-        np.save("translation_vecs_B", translation_vecs_A)
+        np.save("cameraA/ret_A", ret_A)
+        np.save("cameraA/camera_matrix_A",camera_matrix_A)
+        np.save("cameraA/distortion_coefficients_A", distortion_coefficients_A)
+        np.save("cameraA/rotation_vecs_A", rotation_vecs_A)
+        np.save("cameraA/translation_vecs_A", translation_vecs_A)
         print("calibration A done!")
 
+        if (os.path.isfile("cameraB/camera_matrix_B.npy") == False):
+
+            os.mkdir('cameraB')
+            (ret_B,
+            camera_matrix_B,
+            distortion_coefficients_B,
+            rotation_vecs_B,
+            translation_vecs_B) = calibrate_camera(6, 9, './calibB/*.jpg')
+
+            np.save("cameraB/cret_B", ret_A)
+            np.save("cameraB/ccamera_matrix_B",camera_matrix_A)
+            np.save("cameraB/cdistortion_coefficients_B", distortion_coefficients_A)
+            np.save("cameraB/crotation_vecs_B", rotation_vecs_A)
+            np.save("cameraB/ctranslation_vecs_B", translation_vecs_A)
+            print("calibration B done!")
+
+    # tt = np.load("rotation_vecs_A.npy")
+    # yy = np.load("camera_matrix_A.npy")
+    # print("ok")
 
     # (ret_B,
     # camera_matrix_B,
