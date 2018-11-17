@@ -3,11 +3,17 @@ import cv2
 
 if __name__ == '__main__':
     
-    # (ret,
-    # camera_matrix,
-    # distortion_coefficients,
-    # rotation_vecs,
-    # translation_vecs) = calibrate_camera(6, 9)
+    (ret_A,
+    camera_matrix_A,
+    distortion_coefficients_A,
+    rotation_vecs_A,
+    translation_vecs_A) = calibrate_camera(6, 9, './calibA/*.jpg')
+
+    (ret_B,
+    camera_matrix_B,
+    distortion_coefficients_B,
+    rotation_vecs_B,
+    translation_vecs_B) = calibrate_camera(6, 9, './calibB/*.jpg')
 
     # cam = cv2.VideoCapture(0)
 

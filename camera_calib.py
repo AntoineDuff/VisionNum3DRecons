@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import glob
 
-def calibrate_camera(i_grid_size, j_grid_size):
+def calibrate_camera(i_grid_size, j_grid_size, file_path):
 
     # termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -14,7 +14,7 @@ def calibrate_camera(i_grid_size, j_grid_size):
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
 
-    images = glob.glob('./calibration/*.jpg')
+    images = glob.glob(file_path)
 
     for image in images:
         img = cv2.imread(image)
