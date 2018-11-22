@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import glob
+from read_raw import openraw
 
 def calibrate_camera(i_grid_size, j_grid_size, file_path):
 
@@ -17,8 +18,13 @@ def calibrate_camera(i_grid_size, j_grid_size, file_path):
     images = glob.glob(file_path)
 
     for image in images:
-        img = cv2.imread(image)
-        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+        img = openraw(image, 540, 720, 16)
+        cv2.imshow('image',img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        # img = cv2.imread(image)
+        # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        gray = img
 
         # Find the chess board corners
         ret, corners = cv2.findChessboardCorners(gray, (i_grid_size, j_grid_size), None)
@@ -31,14 +37,16 @@ def calibrate_camera(i_grid_size, j_grid_size, file_path):
             imgpoints.append(corners2)
 
             # Draw and display the corners
-            img = cv2.drawChessboardCorners(img, (i_grid_size, j_grid_size), corners2, ret)
+            img = cv2.drawChessboardCorners(gray, (i_grid_size, j_grid_size), corners2, ret)
+            cv2.imshow('img',img)
+            cv2.waitKey(1000)
 
-    img = cv2.imread(images[0], 0)
+#     img = cv2.imread(images[0], 0)
     (ret,
     camera_matrix,
     distortion_coefficients,
     rotation_vecs,
-    translation_vecs) = cv2.calibrateCamera(objpoints, imgpoints, img.shape[::-1], None, None)
+    translation_vecs) = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
     
     return ret, camera_matrix, distortion_coefficients, rotation_vecs, translation_vecs, imgpoints, objpoints
