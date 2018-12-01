@@ -1,7 +1,8 @@
-from camera_calib import calibrate_camera
+from camera_calib import calibrate_camera, rectify_camera, openraw, calibrate_stereo
 import cv2
 import numpy as np
 import os.path
+import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
     
@@ -14,7 +15,7 @@ if __name__ == '__main__':
         rotation_vecs_A,
         translation_vecs_A,
         img_points_A,
-        object_pts) = calibrate_camera(6, 9, './calibA/a.jpg')
+        object_pts) = calibrate_camera(15, 10, './calib_camera_d')
 
         np.save("cameraA/ret_A", ret_A)
         np.save("cameraA/camera_matrix_A",camera_matrix_A)
@@ -35,86 +36,55 @@ if __name__ == '__main__':
         rotation_vecs_B,
         translation_vecs_B,
         img_points_B,
-        object_pts) = calibrate_camera(6, 9, './calibA/b.jpg')
+        object_pts) = calibrate_camera(15, 10, './calib_camera_g')
 
-        np.save("cameraB/ret_B", ret_A)
-        np.save("cameraB/camera_matrix_B",camera_matrix_A)
-        np.save("cameraB/distortion_coefficients_B", distortion_coefficients_A)
-        np.save("cameraB/rotation_vecs_B", rotation_vecs_A)
-        np.save("cameraB/translation_vecs_B", translation_vecs_A)
+        np.save("cameraB/ret_B", ret_B)
+        np.save("cameraB/camera_matrix_B",camera_matrix_B)
+        np.save("cameraB/distortion_coefficients_B", distortion_coefficients_B)
+        np.save("cameraB/rotation_vecs_B", rotation_vecs_B)
+        np.save("cameraB/translation_vecs_B", translation_vecs_B)
         np.save("cameraB/img_points_B", img_points_B)
         np.save("cameraB/objects_pts", object_pts)
         print("calibration B done!")
 
     #matrix A
-    obj_pts = np.load("cameraB/objects_pts.npy")
-    img_pts_A = np.load("cameraA/img_points_A.npy")
+    #obj_pts = np.load("cameraB/objects_pts.npy")
+    #img_pts_A = np.load("cameraA/img_points_A.npy")
     cam_mat_A = np.load("cameraA/camera_matrix_A.npy")
     dist_cof_A = np.load("cameraA/distortion_coefficients_A.npy")
+    #rot_vecs_A = np.load("cameraA/rotation_vecs_A.npy")
+
 
     #matrix B
     cam_mat_B= np.load("cameraB/camera_matrix_B.npy")
-    img_pts_B = np.load("cameraB/img_points_B.npy")
+    #img_pts_B = np.load("cameraB/img_points_B.npy")
     dist_cof_B = np.load("cameraB/distortion_coefficients_B.npy")
+    #rot_vecs_B = np.load("cameraB/rotation_vecs_B.npy")
 
-    img = cv2.imread("calibA/a.jpg")
-    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-    img_shape = gray.shape[::-1]
-
-    flags = 0
-    flags |= cv2.CALIB_FIX_INTRINSIC
-
-    criteria_stereo= (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-
-    retS, MLS, dLS, MRS, dRS, R, T, E, F = cv2.stereoCalibrate(obj_pts,
-                                                          img_pts_B,
-                                                          img_pts_A,
-                                                          cam_mat_B,
-                                                          dist_cof_B,
-                                                          cam_mat_A,
-                                                          dist_cof_A,
-                                                          img_shape,
-                                                          criteria_stereo,
-                                                          flags)
-
-    scale = 0
-
-    RL, RR, PL, PR, Q, roiL, roiR= cv2.stereoRectify(MLS,
-                                                     dLS,
-                                                     MRS,
-                                                     dRS,
-                                                     img_shape,
-                                                     R,
-                                                     T,
-                                                     scale,
-                                                     (0, 0))
+   
+    new_cam_A, roiA = cv2.getOptimalNewCameraMatrix(cam_mat_A, dist_cof_A, (540, 720), 0, (540,720))
+    new_cam_B, roiB = cv2.getOptimalNewCameraMatrix(cam_mat_B, dist_cof_B, (540, 720), 0, (540, 720))
 
 
-    Left_Stereo_Map= cv2.initUndistortRectifyMap(MLS, dLS, RL, PL,
-                                                img_shape, cv2.CV_16SC2)
-    Right_Stereo_Map= cv2.initUndistortRectifyMap(MRS, dRS, RR, PR,
-                                                img_shape, cv2.CV_16SC2)
+    frameL = openraw("image_khan_g/image_g-11292018094748-0.Raw", 540, 720, 16)
+    frameR = openraw("image_khan_d/image_d-11292018094727-0.Raw", 540, 720, 16)
+    frameL = np.uint8(frameL * 255)
+    frameR = np.uint8(frameR * 255)
 
-    Left_nice= cv2.remap(frameL,Left_Stereo_Map[0],Left_Stereo_Map[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)  # Rectify the image using the kalibration parameters founds during the initialisation
-    Right_nice= cv2.remap(frameR,Right_Stereo_Map[0],Right_Stereo_Map[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
-    print("ok")
 
-    # (ret_B,
-    # camera_matrix_B,
-    # distortion_coefficients_B,
-    # rotation_vecs_B,
-    # translation_vecs_B) = calibrate_camera(6, 9, './calibB/*.jpg')
+    obj_pts, img_pts_A = calibrate_stereo(15, 10, "calib_stereo_d")
+    obj_pts, img_pts_B = calibrate_stereo(15, 10, "calib_stereo_g")
 
-    # cam = cv2.VideoCapture(0)
+    Left_Stereo_Map, Right_Stereo_Map = rectify_camera(obj_pts, img_pts_A, img_pts_B, cam_mat_A, cam_mat_B, dist_cof_A, dist_cof_B, new_cam_A, new_cam_B)
 
-    # while True:
-    #     ret, frame = cam.read()
-    #     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    #     cv2.imshow('frame', gray)
-    #     if cv2.waitKey(1) & 0xFF == ord('q'):
-    #         break
+    # Rectify the image using the calibration parameters founds during the initialisation
+    Left_nice = cv2.remap(frameL,Left_Stereo_Map[0],Left_Stereo_Map[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
+    Right_nice = cv2.remap(frameR,Right_Stereo_Map[0],Right_Stereo_Map[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
 
-# When everything done, release the capture
-# cam.release()
-# cv2.destroyAllWindows()
+
+    plt.imshow(Left_nice, cmap="Greys")
+    plt.show()
+    plt.imshow(Right_nice, cmap="Greys")
+    plt.show()
+
 
