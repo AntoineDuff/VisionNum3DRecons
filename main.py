@@ -61,30 +61,33 @@ if __name__ == '__main__':
     dist_cof_B = np.load("cameraB/distortion_coefficients_B.npy")
     #rot_vecs_B = np.load("cameraB/rotation_vecs_B.npy")
 
+    
    
-    new_cam_A, roiA = cv2.getOptimalNewCameraMatrix(cam_mat_A, dist_cof_A, (540, 720), 0, (540,720))
-    new_cam_B, roiB = cv2.getOptimalNewCameraMatrix(cam_mat_B, dist_cof_B, (540, 720), 0, (540, 720))
+    new_cam_A, roiA = cv2.getOptimalNewCameraMatrix(cam_mat_A, dist_cof_A, (540, 720), 1, (540, 720))
+    new_cam_B, roiB = cv2.getOptimalNewCameraMatrix(cam_mat_B, dist_cof_B, (540, 720), 1, (540, 720))
 
 
     frameL = openraw("image_khan_g/image_g-11292018094748-0.Raw", 540, 720, 16)
-    frameR = openraw("image_khan_d/image_d-11292018094727-0.Raw", 540, 720, 16)
     frameL = np.uint8(frameL * 255)
+
+    frameR = openraw("image_khan_d/image_d-11292018094727-0.Raw", 540, 720, 16)
     frameR = np.uint8(frameR * 255)
 
 
     obj_pts, img_pts_A = calibrate_stereo(15, 10, "calib_stereo_d")
     obj_pts, img_pts_B = calibrate_stereo(15, 10, "calib_stereo_g")
 
+
+
     Left_Stereo_Map, Right_Stereo_Map = rectify_camera(obj_pts, img_pts_A, img_pts_B, cam_mat_A, cam_mat_B, dist_cof_A, dist_cof_B, new_cam_A, new_cam_B)
 
-    # Rectify the image using the calibration parameters founds during the initialisation
-    Left_nice = cv2.remap(frameL,Left_Stereo_Map[0],Left_Stereo_Map[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
-    Right_nice = cv2.remap(frameR,Right_Stereo_Map[0],Right_Stereo_Map[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
+    Left_nice= cv2.remap(frameL,Left_Stereo_Map[0],Left_Stereo_Map[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)  # Rectify the image using the calibration parameters founds during the initialisation
+    Right_nice= cv2.remap(frameR,Right_Stereo_Map[0],Right_Stereo_Map[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
 
-
-    plt.imshow(Left_nice, cmap="Greys")
+    #print(Right_nice)
+    plt.imshow(Left_nice, cmap = "Greys")
     plt.show()
-    plt.imshow(Right_nice, cmap="Greys")
+    plt.imshow(Right_nice, cmap = "Greys")
     plt.show()
 
 
