@@ -103,7 +103,7 @@ def calibrate_stereo(i_grid_size, j_grid_size, file_path):
     return objpoints, imgpoints
     
 
-def rectify_camera(obj_pts, img_pts_A, img_pts_B, cam_mat_A, cam_mat_B, dist_cof_A, dist_cof_B, new_cam_A, new_cam_B):
+def rectify_camera(obj_pts, img_pts_A, img_pts_B, cam_mat_A, cam_mat_B, dist_cof_A, dist_cof_B):
 
     img_shape = (540, 720)
 
@@ -136,7 +136,7 @@ def rectify_camera(obj_pts, img_pts_A, img_pts_B, cam_mat_A, cam_mat_B, dist_cof
     Right_Stereo_Map = cv2.initUndistortRectifyMap(MRS, dRS, RR, PR,
                                                    (800, 800), cv2.CV_16SC2)
 
-    return Left_Stereo_Map, Right_Stereo_Map
+    return Left_Stereo_Map, Right_Stereo_Map, PL, PR
 
 
 def openraw(namefile, width, heigth, bit):
@@ -155,25 +155,24 @@ def detectpoint(image, threshold):
     ret, thresh = cv2.threshold(image,threshold, 255 ,0)
     im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-
-    #plt.imshow(im2)
-
     #Take longuest contour
     cnt = max(contours, key=len)
-
-
     M = cv2.moments(cnt)
 
-
     #centroid
-
     cx = int(M['m10']/M['m00'])
     cy = int(M['m01']/M['m00'])
 
-    print(cx, cy)
+    return cx, cy
 
-    return 0
 
+def triangulation(PR, PL, coor_pts_R, coor_pts_L):
+
+    # Homogeneous triangulation and return to cartesian coordinate
+    pst_triang = cv2.triangulatePoints(PR, PL, coor_pts_R, coor_pts_L)
+    pst_triang /= pst_triang[3]
+
+    return pst_triang
 
 
 #img = openraw("Image_g/image_g-11212018153638-0.raw", 540, 720, 16)
