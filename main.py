@@ -1,4 +1,4 @@
-from camera_calib import calibrate_camera, rectify_camera, openraw, calibrate_stereo, triangulation
+from camera_calib import calibrate_camera, rectify_camera, openraw, calibrate_stereo, triangulation, detectpoint, pts_detection
 import cv2
 import numpy as np
 import os.path
@@ -98,27 +98,34 @@ if __name__ == '__main__':
     Right_nice = cv2.remap(frameR, Right_Stereo_Map[0], Right_Stereo_Map[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
 
     # Resulting rectified image
-    plt.imshow(Left_nice, cmap="Greys")
-    plt.show()
-    plt.imshow(Right_nice, cmap="Greys")
-    plt.show()
+    #plt.imshow(Left_nice, cmap="Greys")
+    #plt.show()
+    #plt.imshow(Right_nice, cmap="Greys")
+    #plt.show()
 
     # Find centroid of laser spot -> pas encore impolémenté !
     # pos_A = detectpoint(image, threshold)
 
     # Images coordonate to triangulate
-    coor_pts_R = np.array([304, 277], dtype=np.float)
-    coor_pts_L = np.array([255, 277], dtype=np.float)
 
-    # Call the triangulation function
-    pts_3d = triangulation(PR, PL, coor_pts_R, coor_pts_L)
-    print(pts_3d)
+    pts_list_d, pts_list_g = pts_detection("D:\Desktop\Projet\image_d", "D:\Desktop\Projet\image_g")
+    pts_3d_list = []
+
+    for (pts_d, pts_g) in zip(pts_list_d, pts_list_g):
+        pts3d = triangulation(PR, PL, pts_d, pts_g)
+        pts_3d_list.append(pts3d)
+
+    fig = plt.figure()
+    ax = Axes3D(fig)
 
     # First iteration for 3d scatter real-time avec update
-    for i in range(10):
-        y = np.random.random()
-        z = np.random.random()
-        plt.scatter(i, y, z)
-        plt.pause(0.05)
+    x, y ,z = [], [], []
+
+    for pts in pts_3d_list:
+        x.append(pts[0])
+        y.append(pts[1])
+        z.append(pts[2])
+
+    ax.scatter(x, y, z)
     plt.show()
 

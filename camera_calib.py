@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 import glob
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 # import math
 
 
@@ -164,38 +164,28 @@ def openraw(namefile, width, heigth, bit):
 def detectpoint(image, bg, threshold):
 
     img = openraw(str(image), 540, 720, 8)
-    bg = openraw(str(bg), 540, 720, 8)
-
-    image_corr = img-bg
+    #bg = openraw(str(bg), 540, 720, 8)
+    image_corr = img#-bg
 
     ret, thresh = cv2.threshold(image_corr,threshold, 255 ,0)
 
     thresh = np.uint8(thresh)
-    plt.imshow(thresh)
-    plt.show()
+    #plt.imshow(thresh)
+    #plt.show()
     im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     #Take longuest contour
     cnt = max(contours, key=len)
 
-
     M = cv2.moments(cnt)
 
-
     #centroid
-
     cx = int(M['m10']/M['m00'])
     cy = int(M['m01']/M['m00'])
 
-    #print(cx, cy)
+    pts = np.array([cx, cy], dtype=np.float)
 
-    #plt.imshow(im2)
-    #plt.show()
-
-    return cx, cy
-
-
-
+    return pts
 
 
 def triangulation(PR, PL, coor_pts_R, coor_pts_L):
@@ -206,19 +196,25 @@ def triangulation(PR, PL, coor_pts_R, coor_pts_L):
 
     return pst_triang
 
+def pts_detection(filepath_d, filepath_g):
 
-#img = openraw("Image_g/image_g-11212018153638-0.raw", 540, 720, 16)
-#print(img)
-#img = np.uint8(img * 255)
-#plt.imshow(image_8bit)
-#cv2.imread(img)
-#print(img.dtype)
-#plt.imshow(img)
-#detectpoint(image_8bit, 200)
-#cv2.imshow('image',img)
-#cv2.waitKey(0)
-#cv2.destroyAllWindows()
-#plt.show()
+# Importation of the images.
+    images_d = glob.glob(str(filepath_d)+'/*.Raw')
+    images_g = glob.glob(str(filepath_g) + '/*.Raw')
+    images_d.sort()
+    images_g.sort()
+
+    pts_3d_d = []
+    pts_3d_g = []
+
+    for (imd, img) in zip(images_d, images_g):
+        pts_d = detectpoint(imd, 0, 100)
+        pts_g = detectpoint(img, 0, 100)
+
+        pts_3d_d.append(pts_d)
+        pts_3d_g.append(pts_g)
+
+    return pts_3d_d, pts_3d_g
 
 
 
