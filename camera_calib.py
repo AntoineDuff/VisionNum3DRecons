@@ -58,7 +58,7 @@ def calibrate_camera(i_grid_size, j_grid_size, file_path):
     return ret, camera_matrix, distortion_coefficients, rotation_vecs, translation_vecs, imgpoints, objpoints
 
 
-def calibrate_stereo(i_grid_size, j_grid_size, file_path):
+def calibrate_stereo(i_grid_size, j_grid_size, file_path_A, file_path_B):
     
     # termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -69,30 +69,40 @@ def calibrate_stereo(i_grid_size, j_grid_size, file_path):
 
     # Arrays to store object points and image points from all the images.
     objpoints = [] # 3d point in real world space
-    imgpoints = [] # 2d points in image plane.
+    imgpointsA = [] # 2d points in image plane.
+    imgpointsB = []  # 2d points in image plane.
 
     # Importation of the images.
-    images = glob.glob(str(file_path)+'/*.Raw')
-    images.sort()
+    images_A = glob.glob(str(file_path_A)+'/*.Raw')
+    images_B = glob.glob(str(file_path_B) + '/*.Raw')
+    images_A.sort()
+    images_B.sort()
 
-    for image in images:
+    for (ima, imb) in zip(images_A, images_B):
 
-        img = openraw(image, 540, 720, 16)
-        img = np.uint8(img * 255)
-        gray = img
+        imga = openraw(ima, 540, 720, 16)
+        imga = np.uint8(imga * 255)
+        graya = imga
+
+        imgb = openraw(imb, 540, 720, 16)
+        imgb = np.uint8(imgb * 255)
+        grayb = imgb
 
         # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, (i_grid_size, j_grid_size), None)
+        reta, cornersa = cv2.findChessboardCorners(graya, (i_grid_size, j_grid_size), None)
+        retb, cornersb = cv2.findChessboardCorners(grayb, (i_grid_size, j_grid_size), None)
 
         # If found, add object points, image points (after refining them), if not, print name of image
-        if ret == False: 
+        if reta == False or retb == False:
             print(image)
 
-        if ret == True:
+        if reta == True and retb == True:
             objpoints.append(objp)
 
-            corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
-            imgpoints.append(corners2)
+            corners2a = cv2.cornerSubPix(graya, cornersa, (11, 11), (-1, -1), criteria)
+            corners2b = cv2.cornerSubPix(grayb, cornersb, (11, 11), (-1, -1), criteria)
+            imgpointsA.append(corners2a)
+            imgpointsB.append(corners2b)
 
             # Draw and display the corners
             # img = cv2.drawChessboardCorners(img, (i_grid_size, j_grid_size), corners2, ret)
@@ -100,7 +110,7 @@ def calibrate_stereo(i_grid_size, j_grid_size, file_path):
             # cv2.waitKey(0)
             # cv2.destroyAllWindows()
 
-    return objpoints, imgpoints
+    return objpoints, imgpointsA, imgpointsB
     
 
 def rectify_camera(obj_pts, img_pts_A, img_pts_B, cam_mat_A, cam_mat_B, dist_cof_A, dist_cof_B):
@@ -151,19 +161,41 @@ def openraw(namefile, width, heigth, bit):
     return signal
 
 
-def detectpoint(image, threshold):
-    ret, thresh = cv2.threshold(image,threshold, 255 ,0)
+def detectpoint(image, bg, threshold):
+
+    img = openraw(str(image), 540, 720, 8)
+    bg = openraw(str(bg), 540, 720, 8)
+
+    image_corr = img-bg
+
+    ret, thresh = cv2.threshold(image_corr,threshold, 255 ,0)
+
+    thresh = np.uint8(thresh)
+    plt.imshow(thresh)
+    plt.show()
     im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     #Take longuest contour
     cnt = max(contours, key=len)
+
+
     M = cv2.moments(cnt)
 
+
     #centroid
+
     cx = int(M['m10']/M['m00'])
     cy = int(M['m01']/M['m00'])
 
+    #print(cx, cy)
+
+    #plt.imshow(im2)
+    #plt.show()
+
     return cx, cy
+
+
+
 
 
 def triangulation(PR, PL, coor_pts_R, coor_pts_L):

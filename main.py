@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import time
 
+
 if __name__ == '__main__':
-    
+
     if (os.path.isfile("cameraA/camera_matrix_A.npy") == False):
         	
         os.mkdir('cameraA')
@@ -61,8 +62,8 @@ if __name__ == '__main__':
 
         os.mkdir('camera_stereo')
 
-        obj_pts, img_pts_A = calibrate_stereo(15, 10, "calib_stereo_d")
-        obj_pts_B, img_pts_B = calibrate_stereo(15, 10, "calib_stereo_g")
+        obj_pts, img_pts_A, img_pts_B = calibrate_stereo(15, 10, "calib_stereo_d", "calib_stereo_g")
+        #obj_pts_B, img_pts_B = calibrate_stereo(15, 10, "calib_stereo_g")
 
         (Left_Stereo_Map, Right_Stereo_Map, PL, PR) = rectify_camera(obj_pts, img_pts_A, img_pts_B, cam_mat_A, cam_mat_B,
                                                                    dist_cof_A, dist_cof_B)
