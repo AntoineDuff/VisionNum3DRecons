@@ -29,6 +29,7 @@ if __name__ == '__main__':
         np.save("cameraA/objects_pts", object_pts)
 
         print("calibration A done!")
+        print(camera_matrix_A,distortion_coefficients_A)
 
     if (os.path.isfile("cameraB/camera_matrix_B.npy") == False):
 
@@ -49,6 +50,7 @@ if __name__ == '__main__':
         np.save("cameraB/img_points_B", img_points_B)
         np.save("cameraB/objects_pts", object_pts)
         print("calibration B done!")
+        print(camera_matrix_B, distortion_coefficients_B)
 
     # Load parameter of matrix A -> d
     cam_mat_A = np.load("cameraA/camera_matrix_A.npy")
@@ -108,7 +110,7 @@ if __name__ == '__main__':
 
     # Images coordonate to triangulate
 
-    pts_list_d, pts_list_g = pts_detection("D:\Desktop\Projet\image_d", "D:\Desktop\Projet\image_g")
+    pts_list_d, pts_list_g = pts_detection("D:\Desktop\Projet - Copy\maison_d", "D:\Desktop\Projet - Copy\maison_g")
     pts_3d_list = []
 
     for (pts_d, pts_g) in zip(pts_list_d, pts_list_g):
@@ -119,13 +121,20 @@ if __name__ == '__main__':
     ax = Axes3D(fig)
 
     # First iteration for 3d scatter real-time avec update
-    x, y ,z = [], [], []
+    x, y, z = [], [], []
 
     for pts in pts_3d_list:
         x.append(pts[0])
         y.append(pts[1])
         z.append(pts[2])
 
-    ax.scatter(x, y, z)
+    ax.scatter(x, y, z, s=10, depthshade=True)
+    plt.show()
+
+    #ax1 = plt.figure()
+    # scatter with colormap mapping to z value
+    im = plt.scatter(x, y, s=20, c=z, marker='o', cmap=plt.cm.get_cmap('RdYlBu'));
+    #plt.clim(45, 80)
+    plt.colorbar(im)
     plt.show()
 

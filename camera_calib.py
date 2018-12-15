@@ -94,7 +94,7 @@ def calibrate_stereo(i_grid_size, j_grid_size, file_path_A, file_path_B):
 
         # If found, add object points, image points (after refining them), if not, print name of image
         if reta == False or retb == False:
-            print(image)
+            print(ima, imb)
 
         if reta == True and retb == True:
             objpoints.append(objp)
@@ -131,6 +131,8 @@ def rectify_camera(obj_pts, img_pts_A, img_pts_B, cam_mat_A, cam_mat_B, dist_cof
                                                           criteria_stereo,
                                                           flags=flags)
 
+    print(R)
+    print(T)
     RL, RR, PL, PR, Q, roiL, roiR = cv2.stereoRectify(cam_mat_B,
                                                       dLS,
                                                       cam_mat_A,
@@ -139,6 +141,8 @@ def rectify_camera(obj_pts, img_pts_A, img_pts_B, cam_mat_A, cam_mat_B, dist_cof
                                                       R,
                                                       T,
                                                       alpha=-1, flags=0)
+
+
 
     Left_Stereo_Map = cv2.initUndistortRectifyMap(MLS, dLS, RL, PL,
                                                   (800, 800), cv2.CV_16SC2)
@@ -174,16 +178,22 @@ def detectpoint(image, bg, threshold):
     #plt.show()
     im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    #Take longuest contour
-    cnt = max(contours, key=len)
-
-    M = cv2.moments(cnt)
+    out = 0
+    M=0
+    if len(contours) == 0:
+        out = 1
+    else:
+        #Take longuest contour
+        cnt = max(contours, key=len)
+        M = cv2.moments(cnt)
 
     #centroid
-    cx = int(M['m10']/M['m00'])
-    cy = int(M['m01']/M['m00'])
-
-    pts = np.array([cx, cy], dtype=np.float)
+    if out == 1 or M == 0 or M['m00'] == 0:
+        pts = np.array([0, 0], dtype=np.float)
+    else:
+        cx = int(M['m10']/M['m00'])
+        cy = int(M['m01']/M['m00'])
+        pts = np.array([cx, cy], dtype=np.float)
 
     return pts
 
